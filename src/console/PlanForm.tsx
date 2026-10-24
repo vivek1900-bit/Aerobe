@@ -10,7 +10,7 @@ interface PlanFormProps {
 }
 
 export function PlanForm({ organism }: PlanFormProps) {
-  const { setPlan, setPlanLoading, plan } = useConsoleStore();
+  const { setPlan, setPlanLoading, plan, planLoading } = useConsoleStore();
   const [goal, setGoal] = useState('');
 
   const handleSubmit = useCallback(

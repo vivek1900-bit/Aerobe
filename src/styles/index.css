@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* AEROBE design tokens — mirrors tailwind.config.js (07_UIUX_DESIGN_SYSTEM.md §2). */
+:root {
+  --ink: #050b14;
+  --panel: #0a121c;
+  --panel2: #101b28;
+  --line: #1b2a3a;
+  --text: #e8eef3;
+  --muted: #7f92a3;
+  --signal: #2f8cff;
+  --broth: #f2a93b;
+  --ok: #3bd99f;
+  --warn: #ffb547;
+  --danger: #ff5a4f;
+}
+
+html {
+  background: #050b14;
+  color: #e8eef3;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #050b14;
+  color: #e8eef3;
+  font-family: "IBM Plex Sans", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tabular numerals for all telemetry (07 §3) — IBM Plex Mono arrives via Fontsource in Phase 2. */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Visible focus ring (07 §5) */
+:focus-visible {
+  outline: 2px solid #2f8cff;
+  outline-offset: 2px;
+}
+
+/* Selection — instrument-light tint */
+::selection {
+  background: rgba(47, 140, 255, 0.25);
+  color: #e8eef3;
+}
+
+/* Print stylesheet for the run report (04 §4.5) */
+@media print {
+  html,
+  body {
+    background: #ffffff;
+    color: #000000;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
