@@ -7,7 +7,7 @@ import { AdvisorChat } from './AdvisorChat';
 import { PlanForm } from './PlanForm';
 
 export function Console() {
-  const { controls, organism, snapshot, liteMode, reducedMotion } = useConsoleStore();
+  const { organism, snapshot, liteMode, reducedMotion } = useConsoleStore();
 
   return (
     <main className="max-w-5xl mx-auto p-6 gap-6">
@@ -37,7 +37,7 @@ export function Console() {
                 <p className="text-xs text-gray-400 mt-1">Bound to: rpm → impeller, vvm → bubbles, X → turbidity, T → jacket glow, DO/pH → probe colour.</p>
               </section>
             </div>
-            <AdvisorChat snapshot={snapshot ?? undefined} />
+            <AdvisorChat snapshot={snapshot} />
           </div>
         </div>
       </div>

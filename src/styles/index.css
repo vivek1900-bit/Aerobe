@@ -50,6 +50,37 @@ body {
   color: #e8eef3;
 }
 
+/* Custom range slider (07 §6 Slider) — 1px track, 14px square thumb */
+.slider-track {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 1px;
+  width: 100%;
+  outline: none;
+  cursor: pointer;
+}
+.slider-track::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  margin-top: -6.5px;
+  background: var(--signal);
+  border: 1px solid var(--text);
+  border-radius: 2px;
+}
+.slider-track::-moz-range-thumb {
+  height: 14px;
+  width: 14px;
+  background: var(--signal);
+  border: 1px solid var(--text);
+  border-radius: 2px;
+}
+.slider-track:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
 /* Print stylesheet for the run report (04 §4.5) */
 @media print {
   html,

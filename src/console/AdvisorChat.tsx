@@ -5,9 +5,10 @@ import { useCallback, useRef, useState } from 'react';
 import { useConsoleStore } from './store';
 import { callAdvisor, isValidAdvisorRequest } from '../services/api';
 import type { AdvisorMessage } from './store';
+import type { Snapshot } from '../sim/index';
 
 interface AdvisorChatProps {
-  snapshot: Record<string, unknown> | null;
+  snapshot: Snapshot | null;
 }
 
 export function AdvisorChat({ snapshot }: AdvisorChatProps) {
@@ -15,7 +16,6 @@ export function AdvisorChat({ snapshot }: AdvisorChatProps) {
     advisorMessages,
     advisorLoading,
     advisorAnswer,
-    setAdvisorMessages,
     setAdvisorLoading,
     setAdvisorAnswer,
     addAdvisorMessage,

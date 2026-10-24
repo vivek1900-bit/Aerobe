@@ -2,13 +2,13 @@
 // Person 2 owns src/console/** per 03_ARCHITECTURE.md §4.
 
 import { useEffect } from 'react';
-import { useConsoleStore } from './store';
+import { useConsoleStore, type ConsoleControls } from './store';
 import { CONTROL_RANGES, validateControlValue } from '../services/api';
 
-type ControlKey = keyof ReturnType<typeof useConsoleStore>['controls'];
+type ControlKey = keyof ConsoleControls;
 
 interface ControlPanelProps {
-  onApply: (controls: ReturnType<typeof useConsoleStore>['controls']) => void;
+  onApply: (controls: ConsoleControls) => void;
 }
 
 export function ControlPanel({ onApply }: ControlPanelProps) {
