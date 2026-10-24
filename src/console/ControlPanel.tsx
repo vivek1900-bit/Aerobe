@@ -1,5 +1,4 @@
 // Simulation parameter control panel with strict §6 control range validation (04 §4.1).
-import { useEffect } from 'react';
 import { useConsoleStore, type ConsoleControls } from './store';
 import { CONTROL_RANGES, validateControlValue } from '../services/api';
 import { Panel } from '../ui/Panel';
@@ -11,7 +10,10 @@ import { Pause, Play, RotateCcw } from 'lucide-react';
 type ControlKey = keyof ConsoleControls;
 
 interface ControlPanelProps {
-  onApply: (controls: ConsoleControls) => void;
+  running: boolean;
+  onStart: () => void;
+  onPause: () => void;
+  onReset: () => void;
 }
 
 const CONTROL_ROWS: Array<{ key: ControlKey; label: string; unit: string }> = [
@@ -32,18 +34,14 @@ const ORGANISM_DEFAULTS: Record<'ecoli' | 'yeast', ConsoleControls> = {
   yeast: { Tset: 30, pHset: 5.0, rpm: 300, vvm: 0.8, feed: 0 },
 };
 
-export function ControlPanel({ onApply }: ControlPanelProps) {
-  const { controls, organism, setControls, setOrganism, setControl, setSnapshot } = useConsoleStore();
+export function ControlPanel({ running, onStart, onPause, onReset }: ControlPanelProps) {
+  const { controls, organism, setControls, setOrganism, setControl } = useConsoleStore();
 
   const handleOrganism = (org: 'ecoli' | 'yeast') => {
     if (org === organism) return;
     setOrganism(org);
     setControls(ORGANISM_DEFAULTS[org]);
   };
-
-  useEffect(() => {
-    setSnapshot(null);
-  }, [organism, setSnapshot]);
 
   return (
     <Panel title="Control" index="01">
@@ -87,16 +85,16 @@ export function ControlPanel({ onApply }: ControlPanelProps) {
         })}
       </div>
 
-      {/* Run actions — Start / Pause / Reset (Phase 6 wires the sim loop) */}
+      {/* Run actions — Start / Pause / Reset */}
       <div className="mt-6 flex gap-2 border-t border-line pt-4">
-        <Button variant="primary" className="flex-1" onClick={() => onApply(controls)}>
+        <Button variant="primary" className="flex-1" onClick={onStart} disabled={running}>
           <Play className="h-3.5 w-3.5" aria-hidden="true" />
           Start
         </Button>
-        <Button variant="ghost" aria-label="Pause simulation">
+        <Button variant="ghost" onClick={onPause} disabled={!running} aria-label="Pause simulation">
           <Pause className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>
-        <Button variant="ghost" aria-label="Reset simulation">
+        <Button variant="ghost" onClick={onReset} aria-label="Reset simulation">
           <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
         </Button>
       </div>

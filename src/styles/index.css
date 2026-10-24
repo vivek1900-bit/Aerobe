@@ -81,6 +81,29 @@ body {
   opacity: 0.4;
 }
 
+/* ReactorSVG animations (08 / 04 §4.6) */
+@keyframes aerobe-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes aerobe-rise {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateY(-150px);
+    opacity: 0;
+  }
+}
+
 /* Print stylesheet for the run report (04 §4.5) */
 @media print {
   html,

@@ -26,12 +26,19 @@ export interface AdvisorMessage {
   timestamp: number;
 }
 
+export interface Alarm {
+  id: string;
+  severity: 'warn' | 'danger';
+  message: string;
+  t_h: number;
+}
+
 export interface ConsoleState {
   controls: ConsoleControls;
   organism: 'ecoli' | 'yeast';
   snapshot: Snapshot | null;
   history: Snapshot[];
-  alarms: string[];
+  alarms: Alarm[];
   advisorMessages: AdvisorMessage[];
   advisorLoading: boolean;
   advisorAnswer: string | null;
@@ -46,8 +53,9 @@ export interface ConsoleState {
   setOrganism: (org: 'ecoli' | 'yeast') => void;
   setSnapshot: (snap: Snapshot | null) => void;
   addHistory: (snap: Snapshot) => void;
+  setHistory: (history: Snapshot[]) => void;
   clearHistory: () => void;
-  addAlarm: (id: string) => void;
+  setAlarms: (alarms: Alarm[]) => void;
   clearAlarms: () => void;
   addAdvisorMessage: (msg: AdvisorMessage) => void;
   setAdvisorMessages: (msgs: AdvisorMessage[]) => void;
@@ -84,9 +92,9 @@ const storeCreator: StateCreator<ConsoleState> = (set) => ({
   setSnapshot: (snap: Snapshot | null) => set({ snapshot: snap }),
   addHistory: (snap: Snapshot) =>
     set((state) => ({ history: [...state.history, snap] })),
+  setHistory: (history: Snapshot[]) => set({ history }),
   clearHistory: () => set({ history: [] }),
-  addAlarm: (id: string) =>
-    set((state) => ({ alarms: [...state.alarms, id] })),
+  setAlarms: (alarms: Alarm[]) => set({ alarms }),
   clearAlarms: () => set({ alarms: [] }),
   addAdvisorMessage: (msg: AdvisorMessage) =>
     set((state) => ({ advisorMessages: [...state.advisorMessages, msg] })),

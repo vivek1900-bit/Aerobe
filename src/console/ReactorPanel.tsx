@@ -1,6 +1,6 @@
-// Centre column — reactor vessel. ReactorSVG (Phase 6) renders here; this is the framed shell
-// with live readouts bound to the snapshot.
+// Centre column — reactor vessel: ReactorSVG + live readouts bound to the snapshot.
 import { useConsoleStore } from './store';
+import { ReactorSVG } from './ReactorSVG';
 import { Readout } from '../ui/Readout';
 import { Brackets } from '../ui/Brackets';
 
@@ -20,18 +20,12 @@ export function ReactorPanel() {
         <span className="font-mono text-[11px] uppercase tracking-label text-muted">02 / 03</span>
       </header>
 
-      {/* Vessel placeholder — ReactorSVG lands here in Phase 6 */}
-      <div className="flex flex-1 items-center justify-center p-6">
-        <div className="relative flex h-64 w-64 flex-col items-center justify-center gap-2 border border-line bg-panel2">
-          <Brackets tone="line" />
-          <span className="font-mono text-[11px] uppercase tracking-label text-signal">ReactorSVG</span>
-          <span className="font-mono text-[10px] uppercase tracking-label text-muted">
-            vessel renders here — phase 6
-          </span>
+      <div className="flex min-h-[420px] flex-1 items-center justify-center p-4">
+        <div className="aspect-[360/440] w-full max-w-[340px]">
+          <ReactorSVG />
         </div>
       </div>
 
-      {/* Live readouts — bound to snapshot (broth flash on change via Readout) */}
       <div className="grid grid-cols-4 gap-px border-t border-line bg-line">
         <div className="bg-panel p-3">
           <Readout label="Biomass" value={X} unit="g/L" />
