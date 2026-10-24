@@ -1,9 +1,12 @@
-// Simulation parameter control panel with strict §6 control range validation.
-// Person 2 owns src/console/** per 03_ARCHITECTURE.md §4.
-
+// Simulation parameter control panel with strict §6 control range validation (04 §4.1).
 import { useEffect } from 'react';
 import { useConsoleStore, type ConsoleControls } from './store';
 import { CONTROL_RANGES, validateControlValue } from '../services/api';
+import { Panel } from '../ui/Panel';
+import { Button } from '../ui/Button';
+import { Chip } from '../ui/Chip';
+import { Slider } from '../ui/Slider';
+import { Pause, Play, RotateCcw } from 'lucide-react';
 
 type ControlKey = keyof ConsoleControls;
 
@@ -11,87 +14,92 @@ interface ControlPanelProps {
   onApply: (controls: ConsoleControls) => void;
 }
 
+const CONTROL_ROWS: Array<{ key: ControlKey; label: string; unit: string }> = [
+  { key: 'Tset', label: 'Temperature', unit: '°C' },
+  { key: 'pHset', label: 'pH Setpoint', unit: 'pH' },
+  { key: 'rpm', label: 'Agitation', unit: 'rpm' },
+  { key: 'vvm', label: 'Aeration', unit: 'vvm' },
+  { key: 'feed', label: 'Feed Rate', unit: 'mL/h' },
+];
+
+const ORGANISMS: Array<{ id: 'ecoli' | 'yeast'; label: string }> = [
+  { id: 'ecoli', label: 'E. coli' },
+  { id: 'yeast', label: 'S. cerevisiae' },
+];
+
+const ORGANISM_DEFAULTS: Record<'ecoli' | 'yeast', ConsoleControls> = {
+  ecoli: { Tset: 37, pHset: 7.0, rpm: 400, vvm: 1.0, feed: 0 },
+  yeast: { Tset: 30, pHset: 5.0, rpm: 300, vvm: 0.8, feed: 0 },
+};
+
 export function ControlPanel({ onApply }: ControlPanelProps) {
-  const { controls, organism, setControls, setOrganism, setControl, setSnapshot } =
-    useConsoleStore();
+  const { controls, organism, setControls, setOrganism, setControl, setSnapshot } = useConsoleStore();
 
-  const handleChange = (key: ControlKey, value: string) => {
-    const parsed = parseFloat(value);
-    const clamped = validateControlValue(key, parsed);
-    if (clamped !== null) {
-      setControl(key, clamped);
-    }
-  };
-
-  const handleApply = () => {
-    onApply(controls);
-  };
-
-  const handleOrganismChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const org = e.target.value as 'ecoli' | 'yeast';
+  const handleOrganism = (org: 'ecoli' | 'yeast') => {
+    if (org === organism) return;
     setOrganism(org);
-    const defaults =
-      org === 'ecoli' ? { Tset: 37, pHset: 7.0, rpm: 400, vvm: 1.0, feed: 0 } : { Tset: 30, pHset: 5.0, rpm: 300, vvm: 0.8, feed: 0 };
-    setControls(defaults);
+    setControls(ORGANISM_DEFAULTS[org]);
   };
 
   useEffect(() => {
     setSnapshot(null);
   }, [organism, setSnapshot]);
 
-  const controlRows: Array<{ key: ControlKey; label: string; unit: string }> = [
-    { key: 'Tset', label: 'Temperature', unit: '°C' },
-    { key: 'pHset', label: 'pH Setpoint', unit: 'pH' },
-    { key: 'rpm', label: 'Agitation', unit: 'rpm' },
-    { key: 'vvm', label: 'Aeration', unit: 'vvm' },
-    { key: 'feed', label: 'Feed Rate', unit: 'mL/h' },
-  ];
-
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg bg-white/50 backdrop-blur-sm">
+    <Panel title="Control" index="01">
+      {/* Organism */}
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-gray-700">Organism</label>
-        <select
-          value={organism}
-          onChange={handleOrganismChange}
-          className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white"
-        >
-          <option value="ecoli">E. coli (aerobic, glucose)</option>
-          <option value="yeast">S. cerevisiae (aerobic, glucose)</option>
-        </select>
-        <p className="text-xs text-gray-500 mt-1">Illustrative parameters — teaching simulation only.</p>
+        <span className="font-mono text-[11px] uppercase tracking-label text-muted">Organism</span>
+        <div className="flex gap-2" role="radiogroup" aria-label="Organism">
+          {ORGANISMS.map((o) => (
+            <Chip
+              key={o.id}
+              label={o.label}
+              selected={organism === o.id}
+              onClick={() => handleOrganism(o.id)}
+            />
+          ))}
+        </div>
+        <p className="mt-1 font-mono text-[10px] uppercase tracking-label text-muted">
+          Illustrative — teaching simulation only.
+        </p>
       </div>
 
-      <div className="space-y-3">
-        {controlRows.map(({ key, label, unit }) => {
+      {/* Setpoint sliders */}
+      <div className="mt-5 flex flex-col gap-4">
+        {CONTROL_ROWS.map(({ key, label, unit }) => {
           const range = CONTROL_RANGES[key];
           return (
-            <div key={key} className="flex flex-col gap-1">
-              <div className="flex justify-between text-sm">
-                <label className="font-medium text-gray-700">{label}</label>
-                <span className="text-gray-500">{controls[key].toFixed(range.step < 1 ? 2 : 0)} {unit}</span>
-              </div>
-              <input
-                type="number"
-                step={range.step}
-                min={range.min}
-                max={range.max}
-                value={controls[key]}
-                onChange={(e) => handleChange(key, e.target.value)}
-                className="w-full rounded border border-gray-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-              />
-              <p className="text-xs text-gray-400">Range: {range.min}–{range.max} {unit} (step {range.step})</p>
-            </div>
+            <Slider
+              key={key}
+              label={label}
+              value={controls[key]}
+              min={range.min}
+              max={range.max}
+              step={range.step}
+              unit={unit}
+              onChange={(v) => {
+                const clamped = validateControlValue(key, v);
+                if (clamped !== null) setControl(key, clamped);
+              }}
+            />
           );
         })}
       </div>
 
-      <button
-        onClick={handleApply}
-        className="mt-4 px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-      >
-        Apply to Simulation
-      </button>
-    </section>
+      {/* Run actions — Start / Pause / Reset (Phase 6 wires the sim loop) */}
+      <div className="mt-6 flex gap-2 border-t border-line pt-4">
+        <Button variant="primary" className="flex-1" onClick={() => onApply(controls)}>
+          <Play className="h-3.5 w-3.5" aria-hidden="true" />
+          Start
+        </Button>
+        <Button variant="ghost" aria-label="Pause simulation">
+          <Pause className="h-3.5 w-3.5" aria-hidden="true" />
+        </Button>
+        <Button variant="ghost" aria-label="Reset simulation">
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+        </Button>
+      </div>
+    </Panel>
   );
 }

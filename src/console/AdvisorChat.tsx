@@ -1,11 +1,12 @@
 // Advisor chat component — calls POST /api/advisor, keeps last 12 messages.
 // Falls back to null/offline behavior when the backend returns null.
-
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, type FormEvent } from 'react';
 import { useConsoleStore } from './store';
 import { callAdvisor, isValidAdvisorRequest } from '../services/api';
 import type { AdvisorMessage } from './store';
 import type { Snapshot } from '../sim/index';
+import { Panel } from '../ui/Panel';
+import { Button } from '../ui/Button';
 
 interface AdvisorChatProps {
   snapshot: Snapshot | null;
@@ -29,7 +30,7 @@ export function AdvisorChat({ snapshot }: AdvisorChatProps) {
     .map((m) => ({ role: m.role, content: m.content }));
 
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: FormEvent) => {
       e.preventDefault();
       const question = input.trim();
       if (!question || !snapshot) return;
@@ -74,56 +75,59 @@ export function AdvisorChat({ snapshot }: AdvisorChatProps) {
   );
 
   return (
-    <section className="p-4 border rounded-lg bg-white/50 backdrop-blur-sm flex flex-col h-[400px]">
-      <div className="flex items-center gap-2 mb-2">
-        <h3 className="text-sm font-medium text-gray-700">Process Advisor</h3>
-        {advisorLoading && <span className="text-xs text-blue-500 animate-pulse">thinking…</span>}
-      </div>
+    <Panel title="Process Advisor" index="05">
+      <div className="flex flex-col">
+        {advisorLoading && (
+          <p className="mb-2 animate-pulse font-mono text-[11px] uppercase tracking-label text-signal">
+            thinking…
+          </p>
+        )}
 
-      <div className="flex-1 overflow-y-auto space-y-3 mb-2 pr-2">
-        {advisorMessages.map((msg) => (
-          <div
-            key={msg.timestamp}
-            className={`max-w-[85%] p-2 rounded-lg rounded-tl-none text-sm ${
-              msg.role === 'user'
-                ? 'ml-auto bg-blue-100 text-blue-900 rounded-tr-none'
-                : 'mr-auto bg-gray-100 text-gray-900 rounded-tl-none'
-            }`}
-          >
-            {msg.content}
-          </div>
-        ))}
-        {advisorAnswer && advisorMessages.length === 0 && (
-          <div className="mr-auto bg-gray-100 text-gray-900 text-sm p-2 rounded-lg rounded-tl-none max-w-[85%]">
-            {advisorAnswer}
-          </div>
+        <div className="h-48 space-y-2 overflow-y-auto pr-1">
+          {advisorMessages.map((msg) => (
+            <div
+              key={msg.timestamp}
+              className={`max-w-[85%] border p-2 text-sm ${
+                msg.role === 'user'
+                  ? 'ml-auto border-signal/40 bg-signal/10 text-text'
+                  : 'mr-auto border-line bg-panel2 text-text'
+              }`}
+            >
+              {msg.content}
+            </div>
+          ))}
+          {advisorAnswer && advisorMessages.length === 0 && (
+            <div className="mr-auto max-w-[85%] border border-line bg-panel2 p-2 text-sm text-text">
+              {advisorAnswer}
+            </div>
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-3 flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Ask about the simulated run…"
+            disabled={advisorLoading || !snapshot}
+            className="h-10 min-w-0 flex-1 border border-line bg-panel2 px-3 text-sm text-text outline-none placeholder:text-muted focus:border-signal disabled:opacity-40"
+          />
+          <Button type="submit" disabled={advisorLoading || !input.trim() || !snapshot}>
+            Ask
+          </Button>
+        </form>
+
+        {!snapshot && (
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-label text-muted">
+            Start a run to ask the advisor.
+          </p>
+        )}
+        {advisorAnswer === null && advisorMessages.length > 0 && !advisorLoading && (
+          <p className="mt-1 font-mono text-[11px] uppercase tracking-label text-warn">
+            Advisor offline — using fallback.
+          </p>
         )}
       </div>
-
-      <form onSubmit={handleSubmit} className="flex gap-2">
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about the simulated run…"
-          disabled={advisorLoading || !snapshot}
-          className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm bg-white disabled:opacity-50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
-        />
-        <button
-          type="submit"
-          disabled={advisorLoading || !input.trim() || !snapshot}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
-        >
-          Ask
-        </button>
-      </form>
-
-      {!snapshot && (
-        <p className="text-xs text-gray-500 mt-2">Start a simulation run to ask the advisor.</p>
-      )}
-      {advisorAnswer === null && advisorMessages.length > 0 && !advisorLoading && (
-        <p className="text-xs text-orange-500 mt-1">Advisor returned null — using offline fallback.</p>
-      )}
-    </section>
+    </Panel>
   );
 }

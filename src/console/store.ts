@@ -39,6 +39,7 @@ export interface ConsoleState {
   planLoading: boolean;
   liteMode: boolean;
   reducedMotion: boolean;
+  speed: number;
 
   setControls: (partial: Partial<ConsoleControls>) => void;
   setControl: (key: keyof ConsoleControls, value: number) => void;
@@ -56,6 +57,7 @@ export interface ConsoleState {
   setPlanLoading: (loading: boolean) => void;
   setLiteMode: (lite: boolean) => void;
   setReducedMotion: (motion: boolean) => void;
+  setSpeed: (speed: number) => void;
   reset: () => void;
 }
 
@@ -72,6 +74,7 @@ const storeCreator: StateCreator<ConsoleState> = (set) => ({
   planLoading: false,
   liteMode: false,
   reducedMotion: false,
+  speed: 1,
 
   setControls: (partial: Partial<ConsoleControls>) =>
     set((state) => ({ controls: { ...state.controls, ...partial } })),
@@ -94,6 +97,7 @@ const storeCreator: StateCreator<ConsoleState> = (set) => ({
   setPlanLoading: (loading: boolean) => set({ planLoading: loading }),
   setLiteMode: (lite: boolean) => set({ liteMode: lite }),
   setReducedMotion: (motion: boolean) => set({ reducedMotion: motion }),
+  setSpeed: (speed: number) => set({ speed }),
   reset: () =>
     set({
       controls: { ...DEFAULT_CONTROLS },
@@ -103,6 +107,7 @@ const storeCreator: StateCreator<ConsoleState> = (set) => ({
       advisorMessages: [],
       advisorAnswer: null,
       plan: null,
+      speed: 1,
     }),
 });
 
