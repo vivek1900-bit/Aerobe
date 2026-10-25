@@ -115,3 +115,99 @@ body {
     display: none !important;
   }
 }
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Scrollytelling Tour — Obsidian Bento glass HUD (ref/digital_twin DESIGN.md).
+   Scoped to the intro tour only; the console keeps the 07 avionics language.
+   ──────────────────────────────────────────────────────────────────────────── */
+.tour-card {
+  background: rgba(12, 18, 28, 0.82);
+  border: 1px solid #1c2a3d;
+  border-radius: 18px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.btn-white-pill {
+  background: #f4f6f8;
+  color: #0b0c0e;
+  border-radius: 9999px;
+  font-weight: 600;
+  transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+.btn-white-pill:hover {
+  background: #ffffff;
+  box-shadow: 0 0 24px rgba(255, 255, 255, 0.18);
+}
+.btn-white-pill:active {
+  transform: scale(0.98);
+}
+
+/* Hero ambient glow — amber + blue radial gradients behind the canvas (obsidian base). */
+.hero-glow {
+  background:
+    radial-gradient(ellipse 60% 50% at 72% 32%, rgba(245, 158, 11, 0.20), transparent 60%),
+    radial-gradient(ellipse 55% 45% at 22% 68%, rgba(59, 130, 246, 0.18), transparent 62%),
+    #0b0c0e;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   Obsidian Bento console — unified with the tour (#0B0C0E / #121316 / 16px).
+   ──────────────────────────────────────────────────────────────────────────── */
+.bento-card {
+  background: rgba(18, 19, 22, 0.85); /* #121316 at 85% */
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+}
+
+.bento-subcard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+}
+
+/* Bento range slider (rounded track + white thumb) */
+.bento-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+}
+.bento-range::-webkit-slider-runnable-track {
+  height: 6px;
+  background: #0b0c0e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 9999px;
+}
+.bento-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -4.5px;
+  background: #ffffff;
+  border-radius: 9999px;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(99, 102, 241, 0.35);
+}
+.bento-range::-moz-range-track {
+  height: 6px;
+  background: #0b0c0e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 9999px;
+}
+.bento-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #ffffff;
+  border: none;
+  border-radius: 9999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6), 0 0 8px rgba(99, 102, 241, 0.35);
+}

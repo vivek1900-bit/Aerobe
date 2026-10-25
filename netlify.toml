@@ -1,0 +1,15 @@
+# Aerobe — Netlify build configuration.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Node LTS (matching the local dev environment, v24.x).
+  NODE_VERSION = "24"
+
+# SPA fallback. Functions (netlify/functions/* with `config.path`) are matched
+# before redirects, so this catch-all never swallows /api/advisor or /api/plan.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

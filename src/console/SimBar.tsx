@@ -1,7 +1,6 @@
-// Bottom simulation bar (04 §4): time · phase chip · scrubber · speed.
+// Bento simulation dock — batch time · phase badge · timeline scrubber · speed chips.
 import { useConsoleStore } from './store';
 import { phases } from '../sim/index';
-import { Chip } from '../ui/Chip';
 
 const SPEEDS = [1, 60, 600, 3600];
 
@@ -17,56 +16,59 @@ export function SimBar() {
 
   const tH = snapshot?.t_h ?? 0;
   const phase = history.length > 1 ? phases(history, organism)[history.length - 1] : 'standby';
-
-  const maxT = history.length > 1 ? history[history.length - 1].t_h : 12;
-  const progress = maxT > 0 ? Math.min(100, Math.max(0, (tH / maxT) * 100)) : 0;
+  const maxT = history.length > 1 ? history[history.length - 1].t_h : 24;
 
   return (
-    <footer className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center gap-6 border-t border-line bg-panel px-4 sm:px-6">
-      {/* Time */}
-      <div className="flex flex-col">
-        <span className="font-mono text-[10px] uppercase tracking-label text-muted">Time</span>
-        <span className="font-display text-2xl leading-none tabular-nums text-text">
-          {tH.toFixed(2)}
-          <span className="ml-1 font-mono text-xs text-muted">h</span>
-        </span>
-      </div>
+    <footer className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-3">
+      <div className="pointer-events-auto mx-auto flex h-14 max-w-[1680px] items-center justify-between rounded-2xl border border-white/[0.08] bg-[#121316] px-5">
+        <div className="flex items-center gap-3">
+          <div className="flex items-baseline gap-1.5 rounded-full border border-white/[0.06] bg-[#17181D] px-3 py-1">
+            <span className="font-jakarta text-[10px] font-medium text-zinc-400">Time</span>
+            <span className="font-jetbrains text-lg font-bold tabular-nums tracking-tight text-white">{tH.toFixed(2)}</span>
+            <span className="font-jakarta text-xs text-zinc-500">h</span>
+          </div>
+          <div className="flex items-center gap-1.5 rounded-full border border-white/[0.06] bg-[#17181D] px-3 py-1">
+            <span className="h-2 w-2 rounded-full bg-amber-400" />
+            <span className="font-jakarta text-xs font-medium capitalize text-zinc-300">{phase}</span>
+          </div>
+        </div>
 
-      {/* Phase chip */}
-      <div className="hidden items-center gap-2 sm:flex">
-        <span className="font-mono text-[10px] uppercase tracking-label text-muted">Phase</span>
-        <span className="inline-flex items-center gap-2 border border-line px-3 py-1 font-mono text-xs uppercase tracking-label text-broth">
-          <span className="h-1.5 w-1.5 rounded-full bg-broth" />
-          {phase}
-        </span>
-      </div>
+        <div className="mx-8 flex max-w-2xl flex-1 flex-col justify-center">
+          <div className="mb-1 flex justify-between px-1 font-jetbrains text-[10px] text-zinc-400">
+            <span>0h [Inoc]</span>
+            <span>6h [Exp]</span>
+            <span>12h [Mid]</span>
+            <span>18h [Decel]</span>
+            <span>24h [Harvest]</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={maxT}
+            step={0.01}
+            value={tH}
+            disabled={history.length < 2}
+            aria-label="Simulation timeline scrubber"
+            className="bento-range"
+          />
+        </div>
 
-      {/* Scrubber (interactive in Phase 6 once history is populated) */}
-      <div className="mx-2 hidden flex-1 items-center md:flex">
-        <input
-          type="range"
-          min={0}
-          max={maxT}
-          step={0.01}
-          value={tH}
-          disabled={history.length < 2}
-          aria-label="Simulation timeline scrubber"
-          className="slider-track w-full"
-          style={{
-            background: `linear-gradient(to right, var(--signal) 0%, var(--signal) ${progress}%, var(--line) ${progress}%, var(--line) 100%)`,
-          }}
-        />
-      </div>
-
-      {/* Speed */}
-      <div className="ml-auto flex items-center gap-2">
-        <span className="hidden font-mono text-[10px] uppercase tracking-label text-muted lg:inline">
-          Speed
-        </span>
-        <div className="flex gap-1" role="radiogroup" aria-label="Simulation speed">
-          {SPEEDS.map((s) => (
-            <Chip key={s} label={fmtSpeed(s)} selected={speed === s} onClick={() => setSpeed(s)} />
-          ))}
+        <div className="flex items-center gap-2">
+          <span className="mr-1 font-jakarta text-[11px] font-medium text-zinc-400">Speed</span>
+          <div className="flex items-center gap-0.5 rounded-full border border-white/[0.06] bg-[#17181D] p-0.5">
+            {SPEEDS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSpeed(s)}
+                className={`rounded-full px-3 py-1 font-jakarta text-xs transition ${
+                  speed === s ? 'bg-white/10 font-medium text-white' : 'text-zinc-400 hover:text-white'
+                }`}
+              >
+                {fmtSpeed(s)}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

@@ -1,5 +1,5 @@
-// Custom slider (07 §6): 1px track with signal fill, 14px square thumb, numeric input,
-// units, and min/max ticks. Track/thumb styling lives in src/styles/index.css (.slider-track).
+// Custom slider (07 §6): 2px track with live percentage gradient fill, precision thumb
+// that scales and glows on hover/focus, compact inline numeric input with focus:border-signal.
 import type { ChangeEvent } from 'react';
 
 export interface SliderProps {
@@ -24,7 +24,7 @@ export function Slider({
   disabled = false,
 }: SliderProps) {
   const clampedPct = Math.min(100, Math.max(0, ((value - min) / (max - min)) * 100));
-  const fill = `linear-gradient(to right, var(--signal) 0%, var(--signal) ${clampedPct}%, var(--line) ${clampedPct}%, var(--line) 100%)`;
+  const fill = `linear-gradient(to right, #2F8CFF 0%, #2F8CFF ${clampedPct}%, #162436 ${clampedPct}%, #162436 100%)`;
 
   const handleRange = (e: ChangeEvent<HTMLInputElement>) => onChange(Number(e.target.value));
   const handleNumber = (e: ChangeEvent<HTMLInputElement>) => {
@@ -63,7 +63,7 @@ export function Slider({
           onChange={handleNumber}
           disabled={disabled}
           aria-label={`${label} numeric input`}
-          className="w-20 border border-line bg-panel2 px-2 py-1 font-mono text-xs tabular-nums text-text outline-none focus:border-signal disabled:opacity-40"
+          className="w-20 border border-line bg-panel2 px-2 py-1 font-mono text-xs tabular-nums text-text outline-none transition-colors focus:border-signal disabled:opacity-40"
         />
       </div>
       <div className="flex justify-between font-mono text-[10px] uppercase tracking-label text-muted">

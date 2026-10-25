@@ -7,9 +7,12 @@ dist-ssr
 
 # Vite / local env
 *.local
-.env
-.env.local
-.env.*.local
+.env*
+!.env.example
+
+# Vercel / Netlify build artifacts
+.vercel
+.netlify
 
 # Logs
 *.log

@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+
+<html class="dark scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Aerobe | 300L Bioreactor Digital Twin &amp; Telemetry Studio</title>
+<!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS Play CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            obsidian: {
+              DEFAULT: '#0B0C0E',
+              bento: '#121316',
+              elevated: '#181A1F',
+            },
+            aerobe: {
+              cyan: '#38BDF8',
+              blue: '#60A5FA',
+              amber: '#F59E0B',
+              emerald: '#10B981',
+              rose: '#F43F5E'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    /* Obsidian Micro-Dot Grid Pattern (24px) */
+    .obsidian-dot-grid {
+      background-size: 24px 24px;
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    }
+    
+    /* Bento Glass Cards */
+    .bento-card {
+      background: rgba(18, 19, 22, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    }
+    .bento-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    /* Primary White Pill CTA */
+    .btn-white-pill {
+      border-radius: 9999px;
+      background-color: #FFFFFF;
+      color: #0B0C0E;
+      font-weight: 600;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+    }
+    .btn-white-pill:hover {
+      transform: translateY(-1.5px) scale(1.02);
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.35);
+    }
+
+    /* Subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B0C0E;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.16);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Layering Safe Viewport Bounds */
+    .safe-viewport-stage {
+      position: absolute;
+      top: 84px;
+      bottom: 74px;
+      left: 32px;
+      right: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    @media (min-width: 768px) {
+      .safe-viewport-stage {
+        top: 88px;
+        bottom: 76px;
+        left: 48px;
+        right: 48px;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#0B0C0E] text-white font-sans antialiased selection:bg-white selection:text-[#0B0C0E] overflow-x-hidden">
+<!-- ========================================================================= -->
+<!-- 1. FIXED PHOTOREALISTIC 3D BACKGROUND (ANIMATION_8)                       -->
+<!-- ========================================================================= -->
+<!-- STITCH_THREEJS_START:ANIMATION_8 class="fixed inset-0 w-full h-full pointer-events-none z-0" -->
+<div class="fixed inset-0 w-full h-full pointer-events-none z-0" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_8" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_8');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  // AEROBE 3D Digital Twin - Photorealistic 300L Bioreactor Engine
+// Features: RoomEnvironment PBR reflections, 128-seg machined CAD assemblies, dual 6-blade Rushton impellers,
+// amber broth with vortex streamlines, instanced microbubble field, spline camera path, continuous inertia lerp loop
+
+const width = container.clientWidth || window.innerWidth;
+const height = container.clientHeight || window.innerHeight;
+
+// Scene setup
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x0b0c0e, 0.018);
+
+// Camera
+const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+camera.position.set(0, 0.3, 5.2);
+
+// WebGLRenderer with high-end PBR tone mapping & soft shadows
+const renderer = new THREE.WebGLRenderer({
+  alpha: true,
+  antialias: true,
+  powerPreference: "high-performance"
+});
+renderer.setSize(width, height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+container.appendChild(renderer.domElement);
+
+// HDRI Environment Reflection Map (Procedural Studio Room Lighting Map via Canvas Cube)
+(function createStudioEnvironment() {
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  pmremGenerator.compileEquirectangularShader();
+
+  // Create high dynamic range studio environment cubemap canvas
+  const envScene = new THREE.Scene();
+  envScene.background = new THREE.Color(0x0a0c10);
+
+  // Studio light panels for razor-sharp specular reflections on metal and glass
+  const panelMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const softBlueMat = new THREE.MeshBasicMaterial({ color: 0x88bbff });
+  const warmAmberMat = new THREE.MeshBasicMaterial({ color: 0xffaa44 });
+
+  // Overhead softbox
+  const topSoftbox = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), panelMat);
+  topSoftbox.position.set(0, 8, 0);
+  topSoftbox.rotation.x = Math.PI / 2;
+  envScene.add(topSoftbox);
+
+  // Left cool strip softbox
+  const leftStrip = new THREE.Mesh(new THREE.PlaneGeometry(4, 16), softBlueMat);
+  leftStrip.position.set(-8, 3, -2);
+  leftStrip.rotation.y = Math.PI / 2.2;
+  envScene.add(leftStrip);
+
+  // Right warm strip softbox
+  const rightStrip = new THREE.Mesh(new THREE.PlaneGeometry(4, 16), warmAmberMat);
+  rightStrip.position.set(8, 2, 2);
+  rightStrip.rotation.y = -Math.PI / 2.2;
+  envScene.add(rightStrip);
+
+  const envTexture = pmremGenerator.fromScene(envScene, 0.04).texture;
+  scene.environment = envTexture;
+  pmremGenerator.dispose();
+})();
+
+// Studio Lighting Rig (Dramatic Rim-Lit High-Fidelity Rig)
+const ambientLight = new THREE.AmbientLight(0x0b0e14, 2.4);
+scene.add(ambientLight);
+
+// Key Light: SpotLight casting soft contact shadows
+const keyLight = new THREE.SpotLight(0xffffff, 4.5);
+keyLight.position.set(6, 10, 8);
+keyLight.angle = 0.45;
+keyLight.penumbra = 0.8;
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.width = 2048;
+keyLight.shadow.mapSize.height = 2048;
+keyLight.shadow.bias = -0.0001;
+scene.add(keyLight);
+
+// Cool Rim Backlight: sharp specular highlights along glass edge and stainless steel
+const coolRim = new THREE.SpotLight(0x38bdf8, 5.0);
+coolRim.position.set(-7, 4, -6);
+coolRim.angle = 0.6;
+coolRim.penumbra = 0.75;
+scene.add(coolRim);
+
+// Warm Broth Under-Glow: PointLight positioned inside lower vessel
+const brothGlow = new THREE.PointLight(0xf2a93b, 4.2, 8);
+brothGlow.position.set(0, -1.2, 0);
+scene.add(brothGlow);
+
+// PBR Precision Materials
+const borosilicateGlass = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff,
+  transmission: 0.94,
+  opacity: 1,
+  transparent: true,
+  roughness: 0.035,
+  ior: 1.47,
+  thickness: 0.35,
+  envMapIntensity: 2.2,
+  clearcoat: 1.0,
+  clearcoatRoughness: 0.04
+});
+
+const steel316L = new THREE.MeshPhysicalMaterial({
+  color: 0xd8e0ea,
+  metalness: 0.94,
+  roughness: 0.16,
+  envMapIntensity: 2.0,
+  clearcoat: 0.35
+});
+
+const darkTitanium = new THREE.MeshPhysicalMaterial({
+  color: 0x181a20,
+  metalness: 0.88,
+  roughness: 0.28,
+  envMapIntensity: 1.5
+});
+
+const amberCultureFluid = new THREE.MeshPhysicalMaterial({
+  color: 0xf2a93b,
+  transmission: 0.72,
+  roughness: 0.12,
+  ior: 1.34,
+  transparent: true,
+  opacity: 0.82,
+  envMapIntensity: 1.8
+});
+
+const rubberEPDM = new THREE.MeshStandardMaterial({
+  color: 0x111215,
+  roughness: 0.75,
+  metalness: 0.05
+});
+
+const wireframeCyan = new THREE.MeshBasicMaterial({
+  color: 0x38bdf8,
+  wireframe: true,
+  transparent: true,
+  opacity: 0.0
+});
+
+// Master Assembly Groups
+const masterRig = new THREE.Group();
+masterRig.position.y = -0.15;
+scene.add(masterRig);
+
+// 1. Plinth and Magnetic Drive Base Assembly
+const basePlinthGroup = new THREE.Group();
+const plinthGeo = new THREE.CylinderGeometry(1.58, 1.76, 0.42, 128);
+const plinthMesh = new THREE.Mesh(plinthGeo, darkTitanium);
+plinthMesh.position.y = -2.15;
+plinthMesh.receiveShadow = true;
+basePlinthGroup.add(plinthMesh);
+
+// Beveled collar
+const baseCollarGeo = new THREE.CylinderGeometry(1.42, 1.58, 0.16, 128);
+const baseCollar = new THREE.Mesh(baseCollarGeo, steel316L);
+baseCollar.position.y = -1.86;
+basePlinthGroup.add(baseCollar);
+
+// Magnetic coupling motor drive
+const motorGeo = new THREE.CylinderGeometry(0.82, 0.82, 0.55, 64);
+const motorMesh = new THREE.Mesh(motorGeo, darkTitanium);
+motorMesh.position.y = -1.55;
+basePlinthGroup.add(motorMesh);
+
+// 4 Rubber damped leveling isolators
+for (let i = 0; i < 4; i++) {
+  const angle = (i * Math.PI) / 2 + Math.PI / 4;
+  const padGeo = new THREE.CylinderGeometry(0.24, 0.28, 0.18, 32);
+  const pad = new THREE.Mesh(padGeo, rubberEPDM);
+  pad.position.set(Math.cos(angle) * 1.52, -2.42, Math.sin(angle) * 1.52);
+  basePlinthGroup.add(pad);
+}
+masterRig.add(basePlinthGroup);
+
+// 2. Borosilicate Glass Outer Vessel + Dish Bottom
+const vesselGroup = new THREE.Group();
+
+const glassCylGeo = new THREE.CylinderGeometry(1.35, 1.35, 3.4, 128, 64, true);
+const glassMesh = new THREE.Mesh(glassCylGeo, borosilicateGlass);
+glassMesh.position.y = 0.12;
+vesselGroup.add(glassMesh);
+
+// Bottom rounded hemisphere dish
+const dishGeo = new THREE.SphereGeometry(1.35, 128, 64, 0, Math.PI * 2, Math.PI * 0.5, Math.PI * 0.5);
+const dishMesh = new THREE.Mesh(dishGeo, steel316L);
+dishMesh.position.y = -1.58;
+vesselGroup.add(dishMesh);
+
+// EPDM Bottom seal ring
+const lowerOringGeo = new THREE.TorusGeometry(1.36, 0.024, 32, 128);
+lowerOringGeo.rotateX(Math.PI / 2);
+const lowerOring = new THREE.Mesh(lowerOringGeo, rubberEPDM);
+lowerOring.position.y = -1.56;
+vesselGroup.add(lowerOring);
+
+// Golden Amber Liquid Broth Volume
+const brothGeo = new THREE.CylinderGeometry(1.31, 1.31, 2.35, 128, 64);
+const brothMesh = new THREE.Mesh(brothGeo, amberCultureFluid);
+brothMesh.position.y = -0.42;
+vesselGroup.add(brothMesh);
+
+// Realistic Meniscus Ring
+const meniscusGeo = new THREE.RingGeometry(0.12, 1.30, 96);
+meniscusGeo.rotateX(-Math.PI / 2);
+const meniscusMat = new THREE.MeshPhysicalMaterial({
+  color: 0xffdf88,
+  roughness: 0.05,
+  transparent: true,
+  opacity: 0.78
+});
+const meniscusMesh = new THREE.Mesh(meniscusGeo, meniscusMat);
+meniscusMesh.position.y = 0.75;
+vesselGroup.add(meniscusMesh);
+
+// Circular Ring Sparger at vessel base
+const spargerGeo = new THREE.TorusGeometry(0.55, 0.035, 32, 128);
+spargerGeo.rotateX(Math.PI / 2);
+const spargerMat = new THREE.MeshStandardMaterial({
+  color: 0x60a5fa,
+  metalness: 0.92,
+  roughness: 0.15,
+  emissive: 0x1e3a8a,
+  emissiveIntensity: 0.4
+});
+const spargerRing = new THREE.Mesh(spargerGeo, spargerMat);
+spargerRing.position.y = -1.35;
+vesselGroup.add(spargerRing);
+
+// 4 Stainless Steel Sanitary Baffles
+for (let i = 0; i < 4; i++) {
+  const bAngle = (i * Math.PI) / 2;
+  const baffleGeo = new THREE.BoxGeometry(0.17, 2.9, 0.035);
+  const baffle = new THREE.Mesh(baffleGeo, steel316L);
+  baffle.position.set(Math.cos(bAngle) * 1.22, 0.08, Math.sin(bAngle) * 1.22);
+  baffle.rotation.y = bAngle;
+  vesselGroup.add(baffle);
+}
+
+// CAD Wireframe Overlay Clone for Slide 03
+const wireframeVessel = new THREE.Mesh(glassCylGeo, wireframeCyan);
+wireframeVessel.position.y = 0.12;
+vesselGroup.add(wireframeVessel);
+
+masterRig.add(vesselGroup);
+
+// 3. Central Drive Shaft & Dual 6-Blade Rushton Impellers
+const impellerGroup = new THREE.Group();
+const baseImpellerY = 0.15;
+impellerGroup.position.y = baseImpellerY;
+
+const shaftGeo = new THREE.CylinderGeometry(0.065, 0.065, 4.1, 48);
+const shaftMesh = new THREE.Mesh(shaftGeo, steel316L);
+shaftMesh.position.y = 0.18;
+impellerGroup.add(shaftMesh);
+
+function createPrecisionRushtonTurbine(yPos) {
+  const tGroup = new THREE.Group();
+  tGroup.position.y = yPos;
+
+  // Central Hub with Collar Bolts
+  const hubGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.16, 48);
+  const hub = new THREE.Mesh(hubGeo, steel316L);
+  tGroup.add(hub);
+
+  // Flat Carrier Disc
+  const discGeo = new THREE.CylinderGeometry(0.68, 0.68, 0.032, 96);
+  const disc = new THREE.Mesh(discGeo, steel316L);
+  tGroup.add(disc);
+
+  // 6 Precision Radial Blades with Chamfered Profiling
+  for (let b = 0; b < 6; b++) {
+    const angle = (b * Math.PI) / 3;
+    const bladeGeo = new THREE.BoxGeometry(0.24, 0.32, 0.034);
+    const blade = new THREE.Mesh(bladeGeo, darkTitanium);
+    blade.position.set(Math.cos(angle) * 0.56, 0, Math.sin(angle) * 0.56);
+    blade.rotation.y = angle + Math.PI / 2;
+    tGroup.add(blade);
+  }
+  return tGroup;
+}
+
+const lowerTurbine = createPrecisionRushtonTurbine(-1.12);
+const upperTurbine = createPrecisionRushtonTurbine(0.05);
+impellerGroup.add(lowerTurbine);
+impellerGroup.add(upperTurbine);
+masterRig.add(impellerGroup);
+
+// 4. Machined 316L Stainless Steel Headplate & Port Assembly (AIT Exploded)
+const headplateGroup = new THREE.Group();
+const baseHeadplateY = 1.88;
+headplateGroup.position.y = baseHeadplateY;
+
+// Main Stepped Headplate Plate (128 segs)
+const plateGeo = new THREE.CylinderGeometry(1.52, 1.52, 0.26, 128);
+const plateMesh = new THREE.Mesh(plateGeo, steel316L);
+plateMesh.castShadow = true;
+plateMesh.receiveShadow = true;
+headplateGroup.add(plateMesh);
+
+// Perimeter Sanitary Flange Ring
+const flangeGeo = new THREE.TorusGeometry(1.51, 0.035, 32, 128);
+flangeGeo.rotateX(Math.PI / 2);
+const flange = new THREE.Mesh(flangeGeo, steel316L);
+flange.position.y = -0.12;
+headplateGroup.add(flange);
+
+// 24 Perimeter Hex Bolts arranged in a polar ring
+for (let i = 0; i < 24; i++) {
+  const bAngle = (i * Math.PI) / 12;
+  const boltGeo = new THREE.CylinderGeometry(0.032, 0.032, 0.065, 6);
+  const bolt = new THREE.Mesh(boltGeo, darkTitanium);
+  bolt.position.set(Math.cos(bAngle) * 1.42, 0.14, Math.sin(bAngle) * 1.42);
+  headplateGroup.add(bolt);
+}
+
+// Top Agitation Servo Motor with Heatsink Ribs
+const servoBaseGeo = new THREE.CylinderGeometry(0.50, 0.56, 0.78, 48);
+const servoMesh = new THREE.Mesh(servoBaseGeo, darkTitanium);
+servoMesh.position.y = 0.52;
+headplateGroup.add(servoMesh);
+
+// Motor Heatsink Fin Rings
+for (let f = 0; f < 4; f++) {
+  const finGeo = new THREE.TorusGeometry(0.54, 0.02, 16, 48);
+  finGeo.rotateX(Math.PI / 2);
+  const fin = new THREE.Mesh(finGeo, steel316L);
+  fin.position.y = 0.32 + f * 0.12;
+  headplateGroup.add(fin);
+}
+
+// 8 Sanitary Tri-Clamp Nozzles
+for (let p = 0; p < 8; p++) {
+  const pAngle = (p * Math.PI) / 4 + 0.12;
+  const nozzleGeo = new THREE.CylinderGeometry(0.09, 0.12, 0.24, 32);
+  const nozzle = new THREE.Mesh(nozzleGeo, steel316L);
+  nozzle.position.set(Math.cos(pAngle) * 1.05, 0.18, Math.sin(pAngle) * 1.05);
+  headplateGroup.add(nozzle);
+}
+
+// EPDM Headplate Upper Seal
+const upperOringGeo = new THREE.TorusGeometry(1.36, 0.025, 32, 128);
+upperOringGeo.rotateX(Math.PI / 2);
+const upperOring = new THREE.Mesh(upperOringGeo, rubberEPDM);
+upperOring.position.y = -0.15;
+headplateGroup.add(upperOring);
+
+masterRig.add(headplateGroup);
+
+// 5. In-Situ Optical Sensor Dip-Tubes with Glowing Nodes
+const probeSensors = [];
+const probeSpecs = [
+  { name: "pH Optical", angle: 0.55, radius: 0.78, len: 2.75, color: 0x22c55e }, // Emerald
+  { name: "DO Luminescent", angle: 2.12, radius: 0.84, len: 2.65, color: 0x38bdf8 }, // Cyan
+  { name: "Pt100 RTD", angle: 3.72, radius: 0.74, len: 2.85, color: 0xf59e0b }, // Amber
+  { name: "Exhaust Off-Gas", angle: 5.18, radius: 0.82, len: 1.45, color: 0xa855f7 } // Purple
+];
+
+probeSpecs.forEach(spec => {
+  const pGroup = new THREE.Group();
+  const tubeGeo = new THREE.CylinderGeometry(0.042, 0.042, spec.len, 24);
+  const tube = new THREE.Mesh(tubeGeo, steel316L);
+  tube.position.y = 1.95 - spec.len / 2;
+  pGroup.add(tube);
+
+  // Optical Sensor Tip Node (Emissive highlight)
+  const tipGeo = new THREE.SphereGeometry(0.055, 24, 24);
+  const tipMat = new THREE.MeshStandardMaterial({
+    color: spec.color,
+    emissive: spec.color,
+    emissiveIntensity: 0.9,
+    roughness: 0.2
+  });
+  const tip = new THREE.Mesh(tipGeo, tipMat);
+  tip.position.y = 1.95 - spec.len;
+  pGroup.add(tip);
+
+  const initX = Math.cos(spec.angle) * spec.radius;
+  const initZ = Math.sin(spec.angle) * spec.radius;
+  pGroup.position.set(initX, 0, initZ);
+
+  pGroup.userData = {
+    baseX: initX,
+    baseZ: initZ,
+    baseY: 0,
+    dirX: Math.cos(spec.angle),
+    dirZ: Math.sin(spec.angle)
+  };
+
+  probeSensors.push(pGroup);
+  masterRig.add(pGroup);
+});
+
+// 6. Instanced Sparger Micro-Bubbles (Smooth Spheres)
+const bubbleCount = 320;
+const bubbleGeo = new THREE.SphereGeometry(0.018, 16, 16);
+const bubbleMat = new THREE.MeshPhysicalMaterial({
+  color: 0xffffff,
+  transmission: 0.9,
+  roughness: 0.1,
+  transparent: true,
+  opacity: 0.85
+});
+
+const instancedBubbles = new THREE.InstancedMesh(bubbleGeo, bubbleMat, bubbleCount);
+const dummy = new THREE.Object3D();
+const bubbleData = [];
+
+for (let i = 0; i < bubbleCount; i++) {
+  const theta = Math.random() * Math.PI * 2;
+  const rad = 0.15 + Math.random() * 0.92;
+  const y = -1.35 + Math.random() * 2.1;
+  const speed = 0.012 + Math.random() * 0.022;
+  const scale = 0.6 + Math.random() * 0.9;
+  bubbleData.push({ theta, rad, y, speed, scale });
+}
+masterRig.add(instancedBubbles);
+
+// 7. Ground Telemetry Shadow Grid
+const grid = new THREE.GridHelper(16, 32, 0x38bdf8, 0x141822);
+grid.position.y = -2.44;
+scene.add(grid);
+
+// Camera Path Spline (EnduroSat Smooth Trajectory)
+const splinePoints = [
+  new THREE.Vector3(0, 0.3, 5.2),      // Slide 1: Front elevation
+  new THREE.Vector3(1.8, 0.9, 4.7),    // Slide 2: Exploded oblique view
+  new THREE.Vector3(-1.5, -0.2, 4.3),  // Slide 3: Close inspection CAD angle
+  new THREE.Vector3(0, 0.15, 4.8)      // Slide 4: Operations Console view
+];
+const cameraSpline = new THREE.CatmullRomCurve3(splinePoints);
+
+// Smoothstep utility
+function smoothstep(min, max, value) {
+  const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+  return x * x * (3 - 2 * x);
+}
+
+// Global Engine Controller
+window.aerobeDigitalTwin = {
+  smoothProgress: 0.0,
+  targetProgress: 0.0,
+  rpm: 420,
+  isWireframeMode: false,
+  mouseX: 0,
+  mouseY: 0,
+  setScrollProgress: function(val) {
+    this.targetProgress = Math.max(0, Math.min(1, val));
+  },
+  toggleWireframe: function(state) {
+    this.isWireframeMode = state !== undefined ? state : !this.isWireframeMode;
+  }
+};
+
+// Track mouse parallax
+window.addEventListener('mousemove', (e) => {
+  window.aerobeDigitalTwin.mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+  window.aerobeDigitalTwin.mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+});
+
+// Render Loop with 60fps Inertia Damping
+const clock = new THREE.Clock();
+
+function animate() {
+  requestAnimationFrame(animate);
+  const dt = clock.getDelta();
+  const time = clock.getElapsedTime();
+
+  const twin = window.aerobeDigitalTwin;
+  // Silky EnduroSat Inertia Scroll Lerp
+  twin.smoothProgress += (twin.targetProgress - twin.smoothProgress) * 0.055;
+  const sp = twin.smoothProgress;
+
+  // 1. Continuous Impeller Rotation
+  impellerGroup.rotation.y += (twin.rpm / 60) * 0.05;
+
+  // 2. Explode Factor Interpolation (Slide 2: 0.22 -> 0.38, holds, then 0.48 -> 0.60)
+  const explodeFactor = smoothstep(0.20, 0.36, sp) * (1 - smoothstep(0.48, 0.62, sp));
+  headplateGroup.position.y = baseHeadplateY + explodeFactor * 1.15;
+  impellerGroup.position.y = baseImpellerY + explodeFactor * 0.55;
+  basePlinthGroup.position.y = -explodeFactor * 0.28;
+
+  probeSensors.forEach(p => {
+    p.position.x = p.userData.baseX * (1 + explodeFactor * 0.65);
+    p.position.z = p.userData.baseZ * (1 + explodeFactor * 0.65);
+    p.position.y = p.userData.baseY + explodeFactor * 0.42;
+  });
+
+  // 3. CAD Wireframe Crossfade (Slide 3: 0.50 -> 0.62, holds, then 0.74 -> 0.86)
+  const autoCadFactor = smoothstep(0.50, 0.62, sp) * (1 - smoothstep(0.74, 0.86, sp));
+  const effectiveCad = twin.isWireframeMode ? 1.0 : autoCadFactor;
+  wireframeCyan.opacity = effectiveCad * 0.65;
+  borosilicateGlass.opacity = 1.0 - effectiveCad * 0.55;
+
+  // 4. Camera Spline Evaluation & Mouse Parallax
+  const splineT = Math.max(0, Math.min(1, sp));
+  const camPos = cameraSpline.getPoint(splineT);
+  const targetCamX = camPos.x + twin.mouseX * 0.22;
+  const targetCamY = camPos.y + twin.mouseY * 0.14;
+  const targetCamZ = camPos.z;
+
+  camera.position.x += (targetCamX - camera.position.x) * 0.08;
+  camera.position.y += (targetCamY - camera.position.y) * 0.08;
+  camera.position.z += (targetCamZ - camera.position.z) * 0.08;
+  camera.lookAt(0, sp > 0.75 ? -0.1 : 0.05, 0);
+
+  // 5. Instanced Bubbles Helical Physics
+  for (let i = 0; i < bubbleCount; i++) {
+    const b = bubbleData[i];
+    b.y += b.speed;
+    if (b.y > 0.75) b.y = -1.35;
+
+    // Centrifugal swirl
+    b.theta += 0.025 * (twin.rpm / 400);
+    const x = Math.cos(b.theta) * b.rad;
+    const z = Math.sin(b.theta) * b.rad;
+
+    dummy.position.set(x, b.y, z);
+    dummy.scale.set(b.scale, b.scale, b.scale);
+    dummy.updateMatrix();
+    instancedBubbles.setMatrixAt(i, dummy.matrix);
+  }
+  instancedBubbles.instanceMatrix.needsUpdate = true;
+
+  // Gentle turntable drift
+  masterRig.rotation.y = sp * 1.8 + Math.sin(time * 0.4) * 0.08;
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Resize listener
+window.addEventListener('resize', () => {
+  const nw = container.clientWidth || window.innerWidth;
+  const nh = container.clientHeight || window.innerHeight;
+  camera.aspect = nw / nh;
+  camera.updateProjectionMatrix();
+  renderer.setSize(nw, nh);
+});
+
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_8 -->
+<!-- Ambient Obsidian Micro-Dot Grid & Atmospheric Vignette -->
+<div class="fixed inset-0 obsidian-dot-grid pointer-events-none z-[1] opacity-70"></div>
+<div class="fixed inset-0 pointer-events-none z-[2] bg-gradient-to-t from-[#0B0C0E]/90 via-transparent to-[#0B0C0E]/60"></div>
+<div class="fixed inset-0 pointer-events-none z-[2] bg-radial-gradient from-transparent via-[#0B0C0E]/20 to-[#0B0C0E]/70"></div>
+<!-- ========================================================================= -->
+<!-- 2. INVISIBLE SCROLL SPACER (NATIVE WHEEL / TOUCH CAPTURE)                 -->
+<!-- ========================================================================= -->
+<div class="w-full" id="scroll-spacer" style="height: 500vh; pointer-events: none;"></div>
+<!-- ========================================================================= -->
+<!-- 3. PERSISTENT FIXED HUD STAGE (ZERO VERTICAL FLOW COLLISION)              -->
+<!-- ========================================================================= -->
+<div class="fixed inset-0 w-full h-full overflow-hidden pointer-events-none z-10" id="hud-stage">
+<!-- TOP FLOATING BENTO NAVBAR (z-30) -->
+<header class="absolute top-4 left-1/2 -translate-x-1/2 z-30 w-[94%] max-w-7xl pointer-events-auto">
+<div class="rounded-2xl bg-[#121316]/90 backdrop-blur-xl border border-white/[0.08] px-4 py-2.5 sm:px-6 sm:py-3 flex items-center justify-between shadow-2xl">
+<!-- Left: Brand Identity -->
+<a class="flex items-center space-x-3 group" href="#slide-1" onclick="jumpToChapter(0); return false;">
+<div class="w-8 h-8 rounded-xl bg-gradient-to-br from-sky-400 to-blue-600 p-[1.5px] transition-transform group-hover:scale-105 shadow-sm">
+<div class="w-full h-full bg-[#0B0C0E] rounded-[10px] flex items-center justify-center">
+<span class="font-mono text-xs font-bold text-sky-400">Æ</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-sm font-bold tracking-tight text-white font-mono">Aerobe <span class="text-white/40 font-normal">|</span> Bioreactor Studio</span>
+<span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              v4.8 Live
+            </span>
+</div>
+</a>
+<!-- Center: Interactive Chapter Tabs -->
+<nav class="hidden md:flex items-center space-x-1 bg-white/[0.03] p-1 rounded-xl border border-white/5 font-mono text-xs">
+<button class="chapter-nav-btn px-3 py-1.5 rounded-lg text-white bg-white/10 transition-all font-medium" data-target="0" onclick="jumpToChapter(0)">
+            01 Overview
+          </button>
+<button class="chapter-nav-btn px-3 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all font-medium" data-target="1" onclick="jumpToChapter(1)">
+            02 AIT Exploded
+          </button>
+<button class="chapter-nav-btn px-3 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all font-medium" data-target="2" onclick="jumpToChapter(2)">
+            03 CAD &amp; Monod
+          </button>
+<button class="chapter-nav-btn px-3 py-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all font-medium" data-target="3" onclick="jumpToChapter(3)">
+            04 Operations
+          </button>
+</nav>
+<!-- Right: High-Contrast White Pill CTA -->
+<div class="flex items-center space-x-2">
+<button class="btn-white-pill px-4 py-2 text-xs font-semibold flex items-center space-x-1.5" onclick="jumpToChapter(3)">
+<span>Skip Tour &amp; Open Live Console</span>
+<svg class="w-3.5 h-3.5 ml-0.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+</svg>
+</button>
+</div>
+</div>
+</header>
+<!-- RIGHT-SIDE VERTICAL PROGRESS DOCK -->
+<div class="absolute right-6 top-1/2 -translate-y-1/2 z-30 hidden xl:flex flex-col items-center gap-3 pointer-events-none">
+<span class="text-[9px] font-mono text-white/40 uppercase tracking-widest rotate-90 mb-4 origin-center">TOUR PROGRESS</span>
+<div class="w-1.5 h-44 bg-white/10 rounded-full relative overflow-hidden">
+<div class="w-full bg-gradient-to-b from-sky-400 via-blue-500 to-amber-400 rounded-full transition-all duration-75" id="tourProgressBar" style="height: 0%;"></div>
+</div>
+<span class="text-[11px] font-mono text-sky-400 font-bold mt-2 tabular-nums" id="tourProgressText">00%</span>
+</div>
+<!-- BOTTOM FLOATING STATUS BAR -->
+<div class="absolute bottom-5 left-6 z-30 hidden sm:flex items-center gap-3 pointer-events-auto">
+<div class="bento-card px-3.5 py-2 flex items-center space-x-3 text-xs font-mono text-white/60">
+<div class="flex items-center space-x-1.5 text-sky-400">
+<span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+<span class="font-bold">TWIN-300L ACTIVE</span>
+</div>
+<span class="text-white/20">|</span>
+<span class="text-white font-medium" id="dockChapterLabel">01 OVERVIEW: PILOT VESSEL</span>
+<span class="text-white/20">|</span>
+<span class="text-emerald-400 text-[11px]">PLC LATENCY &lt;12ms</span>
+</div>
+<!-- Agitation RPM Adjuster -->
+<div class="bento-card px-3.5 py-2 flex items-center space-x-3 text-xs font-mono">
+<span class="text-white/40">AGITATION:</span>
+<button class="w-5 h-5 rounded bg-white/10 hover:bg-white/20 flex items-center justify-center font-bold text-white transition-colors" onclick="adjustRpm(-50)">-</button>
+<span class="text-amber-400 font-bold w-16 text-center tabular-nums" id="dockRpmValue">420 RPM</span>
+<button class="w-5 h-5 rounded bg-white/10 hover:bg-white/20 flex items-center justify-center font-bold text-white transition-colors" onclick="adjustRpm(50)">+</button>
+</div>
+</div>
+<!-- ======================================================================= -->
+<!-- SAFE VIEWPORT ZONE: 4 INDEPENDENT CHAPTER LAYERS                        -->
+<!-- Top: 92px, Bottom: 76px, Left/Right: 48px                                -->
+<!-- ======================================================================= -->
+<div class="safe-viewport-stage">
+<div class="max-w-7xl w-full h-full relative flex items-center">
+<!-- =================================================================== -->
+<!-- CHAPTER 01: 300L OVERVIEW                                           -->
+<!-- =================================================================== -->
+<div class="absolute inset-0 w-full h-full flex items-center pointer-events-none transition-none" id="chapter-0">
+<div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<!-- Left Bento Story Card -->
+<div class="lg:col-span-6 pointer-events-auto space-y-4">
+<div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-sky-500/20 bg-sky-500/10 text-[11px] font-mono text-sky-400">
+<span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+<span>• Chapter 01 // 300L Pilot Bioreactor Digital Twin</span>
+</div>
+<h1 class="text-3xl sm:text-5xl lg:text-5.5xl font-extrabold tracking-tight leading-[1.08] text-white">
+                Next-Gen Bioprocess <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-400 to-amber-300">Digital Twin &amp; Control.</span>
+</h1>
+<p class="text-sm sm:text-base text-white/60 font-normal max-w-xl leading-relaxed">
+                Aerobe unifies multiphase biochemical kinetics with real-time 3D spatial telemetry. Inspect mechanical tolerances, solve coupled Monod differential equations, and automate fed-batch control loops.
+              </p>
+<!-- 3 Bento Spec Cards -->
+<div class="grid grid-cols-3 gap-3 pt-1 max-w-lg">
+<div class="bento-card p-3.5">
+<span class="text-[10px] font-mono text-white/40 uppercase tracking-wider">VESSEL CAPACITY</span>
+<div class="text-xl font-bold font-mono text-white mt-1 tabular-nums">300 <span class="text-xs font-normal text-white/40">L</span></div>
+<span class="text-[10px] font-mono text-sky-400 flex items-center gap-1 mt-0.5">● Borosilicate 3.3</span>
+</div>
+<div class="bento-card p-3.5">
+<span class="text-[10px] font-mono text-white/40 uppercase tracking-wider">AGITATION DRIVE</span>
+<div class="text-xl font-bold font-mono text-amber-400 mt-1 tabular-nums">100–1,000 <span class="text-[11px] font-normal text-white/40">RPM</span></div>
+<span class="text-[10px] font-mono text-white/50 mt-0.5">Dual Rushton Hub</span>
+</div>
+<div class="bento-card p-3.5">
+<span class="text-[10px] font-mono text-white/40 uppercase tracking-wider">SENSOR BUS</span>
+<div class="text-xl font-bold font-mono text-emerald-400 mt-1 tabular-nums">10 <span class="text-xs font-normal text-white/40">Hz</span></div>
+<span class="text-[10px] font-mono text-emerald-400 mt-0.5">Live Realtime Bus</span>
+</div>
+</div>
+<!-- Buttons -->
+<div class="flex items-center space-x-3 pt-2">
+<button class="btn-white-pill px-5 py-2.5 text-xs font-semibold flex items-center space-x-2" onclick="jumpToChapter(1)">
+<span>Explore AIT Disassembly ↓</span>
+</button>
+<button class="bento-card px-4 py-2.5 text-xs font-mono text-white/70 hover:text-white transition-all flex items-center space-x-1.5" onclick="jumpToChapter(3)">
+<span>Bypass to Console →</span>
+</button>
+</div>
+</div>
+<!-- Right Side Live Telemetry Card -->
+<div class="lg:col-span-6 pointer-events-auto flex justify-end">
+<div class="bento-card p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl">
+<div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+<span class="text-xs font-mono font-bold text-white flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    Live Bioprocess Telemetry
+                  </span>
+<span class="text-[10px] font-mono text-white/40 bg-white/5 px-2.5 py-0.5 rounded border border-white/5">Batch #B24-014</span>
+</div>
+<div class="space-y-2 font-mono text-xs">
+<div class="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.02]">
+<span class="text-white/40">Organism</span>
+<span class="text-white font-medium">E. coli BL21(DE3) (Aerobic)</span>
+</div>
+<div class="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.02]">
+<span class="text-white/40">Dissolved Oxygen</span>
+<span class="text-emerald-400 font-bold tabular-nums">98.4 % Air Sat</span>
+</div>
+<div class="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.02]">
+<span class="text-white/40">Vessel Temp</span>
+<span class="text-white font-bold tabular-nums">37.0 °C</span>
+</div>
+<div class="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.02]">
+<span class="text-white/40">Medium pH</span>
+<span class="text-sky-400 font-bold tabular-nums">7.00 pH</span>
+</div>
+<div class="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.02]">
+<span class="text-white/40">Aeration Rate</span>
+<span class="text-amber-400 font-bold tabular-nums">1.0 vvm (300 SLPM)</span>
+</div>
+</div>
+<div class="pt-2 border-t border-white/[0.06]">
+<div class="flex justify-between text-[10px] font-mono text-white/40 mb-1.5">
+<span>BATCH CYCLE ELAPSED</span>
+<span class="text-sky-400">T+ 18.4 HOURS</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="bg-gradient-to-r from-sky-400 to-emerald-400 h-full w-2/5 rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- =================================================================== -->
+<!-- CHAPTER 02: KINEMATIC EXPLODED ASSEMBLY                             -->
+<!-- =================================================================== -->
+<div class="absolute inset-0 w-full h-full flex items-center pointer-events-none transition-none" id="chapter-1">
+<div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<!-- Left Side Mechanical Features -->
+<div class="lg:col-span-6 pointer-events-auto space-y-4">
+<div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/10 text-[11px] font-mono text-blue-400">
+<span class="w-2 h-2 rounded-full bg-blue-400"></span>
+<span>• Chapter 02 // Mechanical AIT &amp; Sanitary Architecture</span>
+</div>
+<h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                Kinematic <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-300">Exploded Assembly.</span>
+</h2>
+<p class="text-sm sm:text-base text-white/60 leading-relaxed font-normal">
+                Precision volumetric separation separates the top sanitary headplate along the z-axis while optical dip-tubes and baffles translate outward radially.
+              </p>
+<!-- 3 Interactive Feature Bento Cards -->
+<div class="space-y-2.5 pt-1 max-w-xl">
+<div class="bento-card p-3.5 flex items-center justify-between border-l-2 border-l-sky-400">
+<div>
+<h4 class="text-xs font-mono font-bold text-white">01. 316L Sanitary Headplate</h4>
+<p class="text-[11px] text-white/50 mt-0.5">8 Tri-Clamp ports with sanitary EPDM seal &amp; sterile vent filter</p>
+</div>
+<span class="text-[11px] font-mono text-sky-400 px-2 py-0.5 bg-sky-500/10 rounded border border-sky-500/20 tabular-nums">+420 mm Lift</span>
+</div>
+<div class="bento-card p-3.5 flex items-center justify-between border-l-2 border-l-amber-400">
+<div>
+<h4 class="text-xs font-mono font-bold text-white">02. Dual Rushton Impeller Stack</h4>
+<p class="text-[11px] text-white/50 mt-0.5">Six flat radial blades engineered for high shear gas dispersion</p>
+</div>
+<span class="text-[11px] font-mono text-amber-400 px-2 py-0.5 bg-amber-500/10 rounded border border-amber-500/20 font-bold tabular-nums">D_i / D_t = 0.38</span>
+</div>
+<div class="bento-card p-3.5 flex items-center justify-between border-l-2 border-l-emerald-400">
+<div>
+<h4 class="text-xs font-mono font-bold text-white">03. In-Situ Optical Probe Array</h4>
+<p class="text-[11px] text-white/50 mt-0.5">Luminescent dissolved oxygen, digital pH &amp; Pt100 RTD sensor bundle</p>
+</div>
+<span class="text-[11px] font-mono text-emerald-400 px-2 py-0.5 bg-emerald-500/10 rounded border border-emerald-500/20 tabular-nums">25 mm Ingold Ports</span>
+</div>
+</div>
+</div>
+<!-- Right Side Assembly Tolerances -->
+<div class="lg:col-span-6 pointer-events-auto flex justify-end">
+<div class="bento-card p-5 sm:p-6 w-full max-w-md space-y-4">
+<div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+<span class="text-xs font-mono font-bold text-white">Mechanical Datum &amp; SIP Status</span>
+<span class="text-[10px] font-mono text-sky-400">TOLERANCE ±0.015mm</span>
+</div>
+<div class="space-y-3 font-mono text-xs">
+<div>
+<div class="flex justify-between text-white/50 text-[11px] mb-1">
+<span>HEADPLATE VERTICAL LIFT</span>
+<span class="text-sky-400 font-bold tabular-nums">420 mm</span>
+</div>
+<div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+<div class="bg-sky-400 h-full w-[85%] rounded-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-white/50 text-[11px] mb-1">
+<span>RADIAL BAFFLE OFFSET</span>
+<span class="text-amber-400 font-bold tabular-nums">12.5 mm</span>
+</div>
+<div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+<div class="bg-amber-400 h-full w-[60%] rounded-full"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between text-white/50 text-[11px] mb-1">
+<span>PRESSURE BOUNDARY SEAL</span>
+<span class="text-emerald-400 font-bold tabular-nums">100% NOMINAL</span>
+</div>
+<div class="w-full bg-white/5 h-2 rounded-full overflow-hidden">
+<div class="bg-emerald-400 h-full w-full rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="p-3 bg-white/[0.02] rounded-xl border border-white/5 text-[11px] font-mono text-white/60">
+<span class="text-emerald-400 font-bold">SIP Sterilization Verified:</span> Clean-In-Place / Steam-In-Place cycle validated at 121.0 °C @ 1.2 bar for 30 minutes with zero breach.
+                </div>
+</div>
+</div>
+</div>
+</div>
+<!-- =================================================================== -->
+<!-- CHAPTER 03: CAD & MONOD KINETICS                                    -->
+<!-- =================================================================== -->
+<div class="absolute inset-0 w-full h-full flex items-center pointer-events-none transition-none" id="chapter-2">
+<div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+<!-- Left Side CFD & Monod Mathematics -->
+<div class="lg:col-span-6 pointer-events-auto space-y-4">
+<div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/10 text-[11px] font-mono text-amber-400">
+<span class="w-2 h-2 rounded-full bg-amber-400"></span>
+<span>• Chapter 03 // CFD Hydrodynamics &amp; Monod Kinetics</span>
+</div>
+<h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                Volumetric Flow &amp; <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-sky-300 to-blue-400">Biochemical Kinetics.</span>
+</h2>
+<p class="text-sm sm:text-base text-white/60 leading-relaxed font-normal">
+                Real-time differential solver predicts substrate saturation and specific bacterial growth rates alongside turbulent energy dissipation fields.
+              </p>
+<!-- Monod Kinetics Model Bento -->
+<div class="bento-card p-4 space-y-3 max-w-xl">
+<div class="flex items-center justify-between border-b border-white/[0.08] pb-2">
+<span class="text-xs font-mono font-bold text-white">Coupled Monod Growth Model</span>
+<span class="text-[11px] font-mono text-amber-400 font-semibold">μ = μ_max · S / (K_s + S)</span>
+</div>
+<div class="grid grid-cols-2 gap-3 font-mono text-xs">
+<div class="p-2.5 bg-white/[0.02] rounded-xl border border-white/5">
+<span class="text-[10px] text-white/40">MAX SPECIFIC GROWTH (μ_max)</span>
+<div class="text-base font-bold text-emerald-400 mt-0.5 tabular-nums">0.68 <span class="text-xs text-white/40">h⁻¹</span></div>
+</div>
+<div class="p-2.5 bg-white/[0.02] rounded-xl border border-white/5">
+<span class="text-[10px] text-white/40">SUBSTRATE AFFINITY CONSTANT (K_s)</span>
+<div class="text-base font-bold text-sky-400 mt-0.5 tabular-nums">0.12 <span class="text-xs text-white/40">g/L</span></div>
+</div>
+</div>
+<!-- Mathematical Glowing Curve Visualizer -->
+<div class="pt-1">
+<div class="flex justify-between text-[10px] font-mono text-white/40 mb-1">
+<span>SUBSTRATE UTILIZATION CURVE (S vs μ)</span>
+<span class="text-amber-400 font-semibold">0.48 g/g Yield</span>
+</div>
+<svg class="w-full h-14 bg-black/40 rounded-xl p-2 border border-white/5" viewbox="0 0 300 50">
+<path d="M 10 42 Q 70 12, 290 8" fill="none" stroke="#F59E0B" stroke-linecap="round" stroke-width="2.5"></path>
+<path d="M 10 42 L 290 42" fill="none" stroke="rgba(255,255,255,0.1)" stroke-dasharray="3,3"></path>
+<circle cx="120" cy="18" fill="#38BDF8" r="3.5"></circle>
+<text fill="#38BDF8" font-family="JetBrains Mono, monospace" font-size="8.5" x="130" y="21">Operating Point S = 2.4 g/L</text>
+</svg>
+</div>
+</div>
+</div>
+<!-- Right Side CFD Specs & Wireframe Switch -->
+<div class="lg:col-span-6 pointer-events-auto flex justify-end">
+<div class="bento-card p-5 sm:p-6 w-full max-w-md space-y-4">
+<div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+<span class="text-xs font-mono font-bold text-white">Hydrodynamics &amp; Mass Transfer</span>
+<span class="text-[10px] font-mono text-sky-400">RE = 4.8 × 10⁴</span>
+</div>
+<div class="space-y-2.5 font-mono text-xs">
+<div class="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.02]">
+<span class="text-white/40">Impeller Reynolds No.</span>
+<span class="text-white font-bold tabular-nums">Re = 4.8 × 10⁴</span>
+</div>
+<div class="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.02]">
+<span class="text-white/40">Gassed Power per Vol (P/V)</span>
+<span class="text-amber-400 font-bold tabular-nums">2.45 kW/m³</span>
+</div>
+<div class="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.02]">
+<span class="text-white/40">Volumetric Transfer Coeff (kLa)</span>
+<span class="text-sky-400 font-bold tabular-nums">210 h⁻¹</span>
+</div>
+<div class="flex justify-between items-center py-2 px-3 rounded-xl bg-white/[0.02]">
+<span class="text-white/40">Oxygen Transfer Rate (OTR)</span>
+<span class="text-emerald-400 font-bold tabular-nums">68.5 mmol/(L·h)</span>
+</div>
+</div>
+<!-- Interactive Pill Button -->
+<button class="w-full py-2.5 rounded-xl font-mono text-xs font-semibold bg-white/5 hover:bg-white/10 border border-white/10 text-white flex items-center justify-center space-x-2 transition-all cursor-pointer" onclick="toggleWireframeClick()">
+<span class="w-2 h-2 rounded-full bg-sky-400" id="wireframeIndicatorDot"></span>
+<span id="wireframeButtonLabel">• Toggle CAD Wireframe / Solid 3D</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- =================================================================== -->
+<!-- CHAPTER 04: LIVE TELEMETRY OPERATIONS COCKPIT                       -->
+<!-- =================================================================== -->
+<div class="absolute inset-0 w-full h-full flex items-center pointer-events-none transition-none" id="chapter-3">
+<div class="w-full space-y-4 pointer-events-auto">
+<!-- Header Bento Card -->
+<div class="bento-card p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+<div>
+<div class="inline-flex items-center space-x-2 px-3 py-0.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 text-[10px] font-mono text-emerald-400 mb-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+<span>Chapter 04 // Live Telemetry Operations Cockpit</span>
+</div>
+<h2 class="text-xl sm:text-2xl font-extrabold text-white">Bioprocess Control Mission Console</h2>
+</div>
+<div class="flex items-center space-x-3">
+<div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/5 font-mono text-xs">
+<span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+<span class="text-white/60">PLC STATUS:</span>
+<span class="text-emerald-400 font-bold">ONLINE</span>
+</div>
+<button class="btn-white-pill px-4 py-2 text-xs font-semibold" onclick="alert('Redirecting to full telemetry mission control...')">
+                  Launch Full Interactive Console →
+                </button>
+</div>
+</div>
+<!-- 4 KPI Bento Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+<!-- KPI 1 -->
+<div class="bento-card p-4 space-y-2">
+<div class="flex items-center justify-between text-[11px] font-mono text-white/50">
+<span>DISSOLVED O₂ (dO₂)</span>
+<span class="text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">CASCADE PID</span>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl sm:text-3xl font-extrabold font-mono text-emerald-400 tabular-nums" id="kpiDO2">96.8</span>
+<span class="text-xs font-mono text-white/40">% Air Sat</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="bg-emerald-400 h-full w-[96.8%] rounded-full transition-all duration-300" id="kpiDO2Bar"></div>
+</div>
+<div class="text-[10px] font-mono text-white/40 flex justify-between">
+<span>Target: 95.0%</span>
+<span class="text-white/60">Agitation: 420 RPM</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bento-card p-4 space-y-2">
+<div class="flex items-center justify-between text-[11px] font-mono text-white/50">
+<span>MEDIUM pH</span>
+<span class="text-sky-400 bg-sky-500/10 px-1.5 py-0.2 rounded border border-sky-500/20">AUTO-DOSING</span>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl sm:text-3xl font-extrabold font-mono text-sky-400 tabular-nums" id="kpiPh">7.00</span>
+<span class="text-xs font-mono text-white/40">pH Units</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="bg-sky-400 h-full w-[70%] rounded-full"></div>
+</div>
+<div class="text-[10px] font-mono text-white/40 flex justify-between">
+<span>Setpoint: 7.00 ± 0.05</span>
+<span class="text-white/60">2M NaOH Feed</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bento-card p-4 space-y-2">
+<div class="flex items-center justify-between text-[11px] font-mono text-white/50">
+<span>VESSEL TEMP</span>
+<span class="text-white/70 bg-white/10 px-1.5 py-0.2 rounded border border-white/10">Pt100 RTD</span>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl sm:text-3xl font-extrabold font-mono text-white tabular-nums" id="kpiTemp">37.0</span>
+<span class="text-xs font-mono text-white/40">°C</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="bg-gradient-to-r from-blue-400 to-amber-400 h-full w-[74%] rounded-full"></div>
+</div>
+<div class="text-[10px] font-mono text-white/40 flex justify-between">
+<span>Jacket Control: Active</span>
+<span class="text-white/60">ΔT: +0.02 °C</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bento-card p-4 space-y-2">
+<div class="flex items-center justify-between text-[11px] font-mono text-white/50">
+<span>BIOMASS DENSITY (OD600)</span>
+<span class="text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20">SPECTRAL</span>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="text-2xl sm:text-3xl font-extrabold font-mono text-amber-400 tabular-nums" id="kpiBiomass">15.87</span>
+<span class="text-xs font-mono text-white/40">g/L DCW</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="bg-amber-400 h-full w-[65%] rounded-full"></div>
+</div>
+<div class="text-[10px] font-mono text-white/40 flex justify-between">
+<span>Exponential Growth</span>
+<span class="text-amber-400">μ = 0.42 h⁻¹</span>
+</div>
+</div>
+</div>
+<!-- Lower Section: Oscilloscope Stream & Quick Preview -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+<!-- Oscilloscope Stream (8 cols) -->
+<div class="lg:col-span-8 bento-card p-4 space-y-2.5">
+<div class="flex items-center justify-between border-b border-white/[0.08] pb-2">
+<span class="text-xs font-mono font-bold text-white flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span>
+                    Multi-Channel Telemetry Stream (10 Hz Live)
+                  </span>
+<span class="text-[10px] font-mono text-white/40 tabular-nums">BUFFER: 2,048 PACKETS</span>
+</div>
+<!-- Dynamic SVG Waveform -->
+<div class="relative w-full h-24 sm:h-28 bg-black/40 rounded-xl p-2 border border-white/5 overflow-hidden">
+<svg class="w-full h-full" id="liveWaveformSvg" preserveaspectratio="none" viewbox="0 0 500 100">
+<defs>
+<lineargradient id="waveBlueGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#38BDF8" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#38BDF8" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<path d="M 0 50 L 500 50 L 500 100 L 0 100 Z" fill="url(#waveBlueGrad)" id="waveArea"></path>
+<path d="M 0 50 L 500 50" fill="none" id="waveLineBlue" stroke="#38BDF8" stroke-width="2"></path>
+<path d="M 0 65 L 500 65" fill="none" id="waveLineAmber" stroke="#F59E0B" stroke-dasharray="4,4" stroke-width="1.5"></path>
+</svg>
+</div>
+<div class="flex items-center justify-between text-[11px] font-mono text-white/50">
+<div class="flex items-center space-x-4">
+<span class="text-sky-400">● Ch 1: Dissolved Oxygen (% Sat)</span>
+<span class="text-amber-400">--- Ch 2: Impeller Motor Torque</span>
+</div>
+<span class="text-white/60 tabular-nums">SYNC: 100.0%</span>
+</div>
+</div>
+<!-- Quick Setpoint Preview (4 cols) -->
+<div class="lg:col-span-4 bento-card p-4 space-y-3">
+<span class="text-xs font-mono font-bold text-white block border-b border-white/[0.08] pb-2">
+                  Quick Setpoint Preview
+                </span>
+<div class="space-y-2 font-mono text-xs">
+<div>
+<div class="flex justify-between text-white/70 mb-1 text-[11px]">
+<span>Glucose Feed Rate</span>
+<span class="text-emerald-400 font-bold tabular-nums" id="sliderGlucoseVal">28 mL/h</span>
+</div>
+<input class="w-full accent-emerald-400 bg-white/10 rounded cursor-pointer h-1.5" max="100" min="0" oninput="document.getElementById('sliderGlucoseVal').textContent = this.value + ' mL/h'" type="range" value="28"/>
+</div>
+<div>
+<div class="flex justify-between text-white/70 mb-1 text-[11px]">
+<span>Aeration Rate</span>
+<span class="text-sky-400 font-bold tabular-nums" id="sliderAirVal">1.8 vvm</span>
+</div>
+<input class="w-full accent-sky-400 bg-white/10 rounded cursor-pointer h-1.5" max="3.0" min="0.2" oninput="document.getElementById('sliderAirVal').textContent = parseFloat(this.value).toFixed(1) + ' vvm'" step="0.1" type="range" value="1.8"/>
+</div>
+</div>
+<!-- Full-width White Pill CTA -->
+<button class="w-full btn-white-pill py-2.5 text-xs font-semibold flex items-center justify-center space-x-1.5" onclick="alert('Full mission telemetry console activated!')">
+<span>▶ Enter Full Interactive Console</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- ========================================================================= -->
+<!-- 4. CONTINUOUS INERTIA LERP LOOP & 4-CHAPTER INTERPOLATION ENGINE          -->
+<!-- ========================================================================= -->
+<script>
+    // Chapter metadata & navigation targets
+    const chapters = [
+      { id: 'chapter-0', label: '01 OVERVIEW: PILOT VESSEL', targetScrollPct: 0.04 },
+      { id: 'chapter-1', label: '02 AIT: KINEMATIC DISASSEMBLY', targetScrollPct: 0.35 },
+      { id: 'chapter-2', label: '03 CAD: MONOD KINETICS', targetScrollPct: 0.65 },
+      { id: 'chapter-3', label: '04 OPERATIONS COCKPIT', targetScrollPct: 0.95 }
+    ];
+
+    const tourProgressBar = document.getElementById('tourProgressBar');
+    const tourProgressText = document.getElementById('tourProgressText');
+    const dockChapterLabel = document.getElementById('dockChapterLabel');
+    const navButtons = document.querySelectorAll('.chapter-nav-btn');
+    const chapterElements = chapters.map(c => document.getElementById(c.id));
+
+    let smoothProgress = 0.0;
+    let targetProgress = 0.0;
+
+    // Smoothstep utility
+    function smoothstep(min, max, value) {
+      const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+      return x * x * (3 - 2 * x);
+    }
+
+    // Direct Chapter Jumper
+    function jumpToChapter(index) {
+      const totalScrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const targetScrollY = chapters[index].targetScrollPct * totalScrollable;
+      window.scrollTo({
+        top: targetScrollY,
+        behavior: 'smooth'
+      });
+    }
+
+    // Inertia 60fps Animation Loop
+    function renderInertiaLoop() {
+      // 1. Calculate raw target scroll progress from native window scroll
+      const totalScrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const currentScroll = window.scrollY || window.pageYOffset || 0;
+      targetProgress = totalScrollable > 0 ? Math.max(0, Math.min(1, currentScroll / totalScrollable)) : 0;
+
+      // 2. Silky Inertia Lerp (0.055 damping factor matches EnduroSat)
+      smoothProgress += (targetProgress - smoothProgress) * 0.055;
+
+      // 3. Feed Three.js Digital Twin
+      if (window.aerobeDigitalTwin) {
+        if (typeof window.aerobeDigitalTwin.setScrollProgress === 'function') {
+          window.aerobeDigitalTwin.setScrollProgress(smoothProgress);
+        } else {
+          window.aerobeDigitalTwin.smoothProgress = smoothProgress;
+          window.aerobeDigitalTwin.targetProgress = targetProgress;
+        }
+      }
+
+      // 4. Update Tour Progress Dock (0 to 100%)
+      const pct = Math.round(smoothProgress * 100);
+      if (tourProgressBar) tourProgressBar.style.height = pct + '%';
+      if (tourProgressText) tourProgressText.textContent = (pct < 10 ? '0' : '') + pct + '%';
+
+      // 5. Calculate Bell-Curve Smoothstep weights for each Chapter:
+      // Chapter 01: 0.00 to 0.25 (fades out 0.18 -> 0.25)
+      const w0 = 1.0 - smoothstep(0.18, 0.25, smoothProgress);
+
+      // Chapter 02: 0.25 to 0.52 (fades in 0.22 -> 0.30, holds, fades out 0.46 -> 0.52)
+      const w1 = smoothstep(0.22, 0.30, smoothProgress) * (1.0 - smoothstep(0.46, 0.52, smoothProgress));
+
+      // Chapter 03: 0.52 to 0.78 (fades in 0.50 -> 0.57, holds, fades out 0.72 -> 0.78)
+      const w2 = smoothstep(0.50, 0.57, smoothProgress) * (1.0 - smoothstep(0.72, 0.78, smoothProgress));
+
+      // Chapter 04: 0.78 to 1.00 (fades in 0.76 -> 0.84, locks in)
+      const w3 = smoothstep(0.76, 0.84, smoothProgress);
+
+      const weights = [w0, w1, w2, w3];
+
+      // 6. Apply Opacity, TranslateY, and Pointer Events to Chapter Overlays
+      weights.forEach((w, idx) => {
+        const el = chapterElements[idx];
+        if (!el) return;
+
+        // Smooth translation offset (drift upward when fading out)
+        const translateY = (1 - w) * (idx === 0 ? -24 : 24);
+        const blurAmount = (1 - w) * 8;
+
+        el.style.opacity = w.toFixed(3);
+        el.style.transform = `translateY(${translateY.toFixed(2)}px)`;
+        el.style.filter = blurAmount > 0.1 ? `blur(${blurAmount.toFixed(1)}px)` : 'none';
+
+        if (w > 0.08) {
+          el.style.pointerEvents = 'auto';
+          el.style.visibility = 'visible';
+        } else {
+          el.style.pointerEvents = 'none';
+          el.style.visibility = 'hidden';
+        }
+      });
+
+      // 7. Active Chapter Detection for Navbar & Bottom Dock
+      let activeIdx = 0;
+      let maxWeight = -1;
+      weights.forEach((w, i) => {
+        if (w > maxWeight) {
+          maxWeight = w;
+          activeIdx = i;
+        }
+      });
+
+      if (dockChapterLabel && chapters[activeIdx]) {
+        dockChapterLabel.textContent = chapters[activeIdx].label;
+      }
+
+      navButtons.forEach((btn, idx) => {
+        if (idx === activeIdx) {
+          btn.classList.add('text-white', 'bg-white/10');
+          btn.classList.remove('text-white/50');
+        } else {
+          btn.classList.remove('text-white', 'bg-white/10');
+          btn.classList.add('text-white/50');
+        }
+      });
+
+      requestAnimationFrame(renderInertiaLoop);
+    }
+
+    // Start loop
+    requestAnimationFrame(renderInertiaLoop);
+
+    // RPM Micro-adjuster
+    function adjustRpm(delta) {
+      if (!window.aerobeDigitalTwin) return;
+      window.aerobeDigitalTwin.rpm = Math.max(100, Math.min(1000, (window.aerobeDigitalTwin.rpm || 420) + delta));
+      const disp = document.getElementById('dockRpmValue');
+      if (disp) disp.textContent = window.aerobeDigitalTwin.rpm + ' RPM';
+    }
+
+    // Wireframe Mode Manual Toggle
+    let isWireframeActive = false;
+    function toggleWireframeClick() {
+      isWireframeActive = !isWireframeActive;
+      if (window.aerobeDigitalTwin && typeof window.aerobeDigitalTwin.toggleWireframe === 'function') {
+        window.aerobeDigitalTwin.toggleWireframe(isWireframeActive);
+      }
+      const label = document.getElementById('wireframeButtonLabel');
+      const dot = document.getElementById('wireframeIndicatorDot');
+      if (label) {
+        label.textContent = isWireframeActive ? '• Switch to Photorealistic Solid' : '• Toggle CAD Wireframe / Solid 3D';
+      }
+      if (dot) {
+        dot.className = isWireframeActive ? 'w-2 h-2 rounded-full bg-amber-400' : 'w-2 h-2 rounded-full bg-sky-400';
+      }
+    }
+
+    // Dynamic Live Oscilloscope Generator (Slide 04)
+    const totalPoints = 50;
+    const wavePointsBlue = new Array(totalPoints).fill(50);
+    const wavePointsAmber = new Array(totalPoints).fill(65);
+
+    const waveLineBlue = document.getElementById('waveLineBlue');
+    const waveLineAmber = document.getElementById('waveLineAmber');
+    const waveArea = document.getElementById('waveArea');
+    const kpiDO2 = document.getElementById('kpiDO2');
+
+    setInterval(() => {
+      const t = Date.now() * 0.003;
+      // Blue channel: dissolved oxygen oscillation
+      const blueVal = 50 + Math.sin(t * 1.5) * 14 + Math.cos(t * 2.8) * 6;
+      wavePointsBlue.push(blueVal);
+      wavePointsBlue.shift();
+
+      // Amber channel: motor torque harmonics
+      const amberVal = 62 + Math.cos(t * 2.0) * 8 + Math.sin(t * 3.5) * 4;
+      wavePointsAmber.push(amberVal);
+      wavePointsAmber.shift();
+
+      const stepX = 500 / (totalPoints - 1);
+
+      let dBlue = `M 0 ${wavePointsBlue[0]}`;
+      let dAmber = `M 0 ${wavePointsAmber[0]}`;
+
+      for (let i = 1; i < totalPoints; i++) {
+        const x = (i * stepX).toFixed(1);
+        dBlue += ` L ${x} ${wavePointsBlue[i].toFixed(1)}`;
+        dAmber += ` L ${x} ${wavePointsAmber[i].toFixed(1)}`;
+      }
+
+      if (waveLineBlue) waveLineBlue.setAttribute('d', dBlue);
+      if (waveArea) waveArea.setAttribute('d', `${dBlue} L 500 100 L 0 100 Z`);
+      if (waveLineAmber) waveLineAmber.setAttribute('d', dAmber);
+
+      // Micro-jitter dissolved oxygen readout
+      if (kpiDO2) {
+        const jitter = (96.7 + Math.sin(t * 0.8) * 0.3).toFixed(1);
+        kpiDO2.textContent = jitter;
+      }
+    }, 100);
+  </script>
+</body></html>

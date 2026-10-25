@@ -21,6 +21,8 @@ export default {
         display: ['"Barlow Condensed"', 'sans-serif'],
         sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+        jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+        jetbrains: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
         DEFAULT: '3px',
